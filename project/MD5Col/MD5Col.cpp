@@ -343,7 +343,7 @@ int Block1() {
         // 0     = .... .... .... .... .... .... .... ....  0x00000000
         // 1     = .... .... .... .... .... .... .... ....  0x00000000
         Q[1] = rng();
-
+        /*printf("%d \n", Q[1]);*/
         // Q[2] will be generated from x[1] using Q[14..17]
 
         // Q[3]  = .... .... .vvv 0vvv vvvv 0vvv v0.. .... 
@@ -1560,8 +1560,7 @@ int Block2() {
 }
 
 
-int main(int argc, char* argv[]) {
-
+int main(char* arg[]) {
 
     //Filenames of summary, and collisions m1, m2
     char summary[64], m1_file[64], m2_file[64];
@@ -1569,7 +1568,16 @@ int main(int argc, char* argv[]) {
     FILE* f;
     uint8_t* p;
 
-    printf("\nThis program creates a MD5 collision using the Tunneling method by V. Klima.\n");
+    //Seed setting for the LCG generator
+    uint32_t seed;
+    seed = 0;
+    X = seed;
+
+    //Default init vectors
+    IV1 = 0x67452301; IV2 = 0xefcdab89;
+    IV3 = 0x98badcfe; IV4 = 0x10325476;
+
+    /*printf("\nThis program creates a MD5 collision using the Tunneling method by V. Klima.\n");
     if (WRITE_BLOCKS_SUMMARY)
         printf("It creates a summary (collision_md5_seed.txt) about the collision found.\n");
     if (WRITE_BLOCKS_TO_DISK)
@@ -1577,42 +1585,15 @@ int main(int argc, char* argv[]) {
     printf("The program uses pseudorandom numbers and its behaviour is probabilistic.\n");
     printf("You can give as input 1 HEXnum to specify the seed to use.\n");
     printf("You can give as input 4 HEXnums to specify the custom IV for MD5.\n");
-    printf("You can give as input 5 HEXnums to specify the seed and custom IV.\n\n");
+    printf("You can give as input 5 HEXnums to specify the seed and custom IV.\n\n");*/
 
-    //Seed is passed or generated
-    uint32_t seed;
-
-    if ((argc == 2) || (argc == 6))
-        seed = charhex_to_uint32(argv[1]);
-    else {
-        seed = (uint32_t)mix(clock() ^ time(NULL) ^ _getpid());
-    }
-
-    //Seed setting for the LCG generator
-    X = seed;
-
-    //Default init vectors
-    IV1 = 0x67452301; IV2 = 0xefcdab89;
-    IV3 = 0x98badcfe; IV4 = 0x10325476;
-
-    //Init vectors are passed
-    if (argc == 5) {
-        IV1 = charhex_to_uint32(argv[1]); IV2 = charhex_to_uint32(argv[2]);
-        IV3 = charhex_to_uint32(argv[3]); IV4 = charhex_to_uint32(argv[4]);
-    }
-
-    //Init vectors and seed are passed
-    if (argc == 6) {
-        IV1 = charhex_to_uint32(argv[2]); IV2 = charhex_to_uint32(argv[3]);
-        IV3 = charhex_to_uint32(argv[4]); IV4 = charhex_to_uint32(argv[5]);
-    }
-
-    //We print the IV in use
-    printf("Init vector : 0x%08X,0x%08X,0x%08X,0x%08X\n", IV1, IV2, IV3, IV4);
-
-    //Seed printing
-    printf("\nSeed set to 0x%08X\n", seed);
-
+    
+    ////Seed is passed or generated
+    //if ((argc == 2) || (argc == 6))
+    //    seed = charhex_to_uint32(argv[1]);
+    //else {
+    //    seed = (uint32_t)mix(clock() ^ time(NULL) ^ _getpid());
+    //}
 
     ///////////////////////////////////////////////////////////////
     ///                        Block 1                           //
@@ -1681,7 +1662,7 @@ int main(int argc, char* argv[]) {
     if (WRITE_BLOCKS_SUMMARY) {
 
         //We store the filenames of our collision blocks
-        sprintf_s(summary, "collision_md5_%08X.txt", seed);
+        sprintf_s(summary, "./results/collision_md5_%08X.txt", seed);
 
         f = fopen(summary, "a");
 
@@ -1743,8 +1724,8 @@ int main(int argc, char* argv[]) {
     if (WRITE_BLOCKS_TO_DISK) {
 
         //Writing block to disk
-        sprintf_s(m1_file, "collision1_md5_%08X.bin", seed);
-        sprintf_s(m2_file, "collision2_md5_%08X.bin", seed);
+        sprintf_s(m1_file, "./results/collision1_md5_%08X.bin", seed);
+        sprintf_s(m2_file, "./results/collision2_md5_%08X.bin", seed);
 
         printf("\nWriting Message 1 to disk: ");
         printf((write_block(m1_file, (void*)v1) ? "FAILED\n" : "OK\n"));
