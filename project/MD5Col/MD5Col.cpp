@@ -343,7 +343,10 @@ int Block1() {
         // 0     = .... .... .... .... .... .... .... ....  0x00000000
         // 1     = .... .... .... .... .... .... .... ....  0x00000000
         Q[1] = rng();
-        /*printf("%d \n", Q[1]);*/
+       /* if (testflag < 10) {
+            printf("%d \n", Q[1]);
+            testflag++;
+        }*/
         // Q[2] will be generated from x[1] using Q[14..17]
 
         // Q[3]  = .... .... .vvv 0vvv vvvv 0vvv v0.. .... 
@@ -476,21 +479,22 @@ int Block1() {
         sigma_Q19 = G(Q[18], Q[17], Q[16]) + Q[15] + x[11] + 0x265e5a51;
         if ((sigma_Q19 & 0x0003fff8) == 0x0003fff8)
             continue;
-
+        
         Q[19] = Q[18] + RL(sigma_Q19, 14);
-
+        
         // Q[18] = ^.^. .... .... ..1. .... .... .... .... 
         // Q[19] = ^... .... .... ..0. .... .... .... .... 
         //         1000 0000 0000 0010 0000 0000 0000 0000  0x80020000 
         if (((Q[19] ^ Q[18]) & 0x80020000) != 0x00020000)
             continue;
-
+        
         // Q[20] ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         // Extra conditions: ¦²20,30 ~ ¦²20,32 not all 0
         // 0xe0000000 = 1110 0000 0000 0000 0000 0000 0000 0000
         sigma_Q20 = G(Q[19], Q[18], Q[17]) + Q[16] + x[0] + 0xe9b6c7aa;
         if ((sigma_Q20 & 0xe0000000) == 0)
             continue;
+
 
         Q[20] = Q[19] + RL(sigma_Q20, 20);
 
@@ -500,13 +504,13 @@ int Block1() {
 
         // Q[21] ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         Q[21] = Q[20] + RL(G(Q[20], Q[19], Q[18]) + Q[17] + x[5] + 0xd62f105d, 5);
-
+        
         // Q[20] = ^... .... .... ..v. .... .... .... .... 
         // Q[21] = ^... .... .... ..^. .... .... .... ....
         //         1000 0000 0000 0010 0000 0000 0000 0000  0x80020000 
         if (((Q[21] ^ Q[20]) & 0x80020000) != 0)
             continue;
-
+        
         // Q[22] ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         Q[22] = Q[21] + RL(G(Q[21], Q[20], Q[19]) + Q[18] + x[10] + 0x2441453, 9);
 
@@ -549,6 +553,8 @@ int Block1() {
         tmp_q14 = Q[14];
         tmp_q20 = Q[20];
         tmp_q21 = Q[21];
+
+        
 
         ///////////////////////////////////////////////////////////////
         ///                       Tunnel Q10                         //
@@ -957,6 +963,11 @@ int Block1() {
                                 AA0 = IV1 + Q[61];  BB0 = IV2 + Q[64];
                                 CC0 = IV3 + Q[63];  DD0 = IV4 + Q[62];
 
+                                if (flag) {
+                                    printf("%d", AA0);
+                                    flag = false;
+                                }
+
                                 //Last sufficient conditions  
                                 if (bit(BB0, 6) != 0)
                                     continue;
@@ -1005,6 +1016,8 @@ int Block1() {
                                 AA1 = IV1 + a;  BB1 = IV2 + b;
                                 CC1 = IV3 + c;  DD1 = IV4 + d;
 
+                                printf("verifying...\n");
+
                                 //We see if the Differential Path is verified,
                                 if (((AA1 - AA0) != 0x80000000) ||
                                     ((BB1 - BB0) != 0x82000000) ||
@@ -1037,9 +1050,6 @@ int Block1() {
 
 
 /*=========================================================*/
-
-
-
 int Block2() {
 
     uint32_t Q[65], x[16];
@@ -1195,6 +1205,7 @@ int Block2() {
         Q1Q2_strength = 0;
         for (i = 1; i < 33; i++)
             Q1Q2_strength += bit(mask_Q1Q2, i);
+
 
         Q1_fix = Q[1] & ~mask_Q1Q2;
         Q2_fix = Q[2] & ~mask_Q1Q2;
@@ -1520,6 +1531,7 @@ int Block2() {
                         AA0 = A0 + Q[61]; BB0 = B0 + Q[64];
                         CC0 = C0 + Q[63]; DD0 = D0 + Q[62];
 
+
                         //Message 2 intermediate hash computation
                         for (i = 0; i < 16; i++)
                             Hx[i] = x[i];
@@ -1535,6 +1547,8 @@ int Block2() {
                         AA1 = A1 + a; BB1 = B1 + b;
                         CC1 = C1 + c; DD1 = D1 + d;
 
+                        printf("verifying...\n");
+                        
                         if (((AA1 - AA0) != 0) || ((BB1 - BB0) != 0) || ((CC1 - CC0) != 0) || ((DD1 - DD0) != 0))
                             continue;
 
@@ -1570,7 +1584,7 @@ int main(char* arg[]) {
 
     //Seed setting for the LCG generator
     uint32_t seed;
-    seed = 0;
+    seed = 1234;
     X = seed;
 
     //Default init vectors
