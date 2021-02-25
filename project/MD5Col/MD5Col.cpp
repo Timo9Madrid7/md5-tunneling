@@ -336,6 +336,7 @@ int Block1() {
 
     //Start block 1 generation. 
     //TO-DO: add a time limit for collision search.
+
     for (; ; ) {
 
         // Q[1]  = .... .... .... .... .... .... .... .... 
@@ -343,10 +344,7 @@ int Block1() {
         // 0     = .... .... .... .... .... .... .... ....  0x00000000
         // 1     = .... .... .... .... .... .... .... ....  0x00000000
         Q[1] = rng();
-       /* if (testflag < 10) {
-            printf("%d \n", Q[1]);
-            testflag++;
-        }*/
+        
         // Q[2] will be generated from x[1] using Q[14..17]
 
         // Q[3]  = .... .... .vvv 0vvv vvvv 0vvv v0.. .... 
@@ -460,7 +458,6 @@ int Block1() {
         x[11] = RR(Q[12] - Q[11], 22) - F(Q[11], Q[10], Q[9]) - Q[8] - 0x895cd7be;
         x[15] = RR(Q[16] - Q[15], 22) - F(Q[15], Q[14], Q[13]) - Q[12] - 0x49b40821;
 
-
         // Q[2] = .... .... .... .... .... .... .... .... 
         Q[2] = Q[1] + RL(F(Q[1], QM0, QM1) + QM2 + x[1] + 0xe8c7b756, 12);
 
@@ -504,7 +501,7 @@ int Block1() {
 
         // Q[21] ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         Q[21] = Q[20] + RL(G(Q[20], Q[19], Q[18]) + Q[17] + x[5] + 0xd62f105d, 5);
-        
+
         // Q[20] = ^... .... .... ..v. .... .... .... .... 
         // Q[21] = ^... .... .... ..^. .... .... .... ....
         //         1000 0000 0000 0010 0000 0000 0000 0000  0x80020000 
@@ -963,11 +960,6 @@ int Block1() {
                                 AA0 = IV1 + Q[61];  BB0 = IV2 + Q[64];
                                 CC0 = IV3 + Q[63];  DD0 = IV4 + Q[62];
 
-                                if (flag) {
-                                    printf("%d", AA0);
-                                    flag = false;
-                                }
-
                                 //Last sufficient conditions  
                                 if (bit(BB0, 6) != 0)
                                     continue;
@@ -1079,6 +1071,7 @@ int Block2() {
 
     //Start block 2 generation. 
     //TO-DO: add a time limit for collision search.
+    int flag = 1;
     for (; ; ) {
 
         // Q[ 1] = ~Ivvv  010v  vv1v  vvv1  .vvv  0vvv  vv0.  ...v 
@@ -1288,6 +1281,7 @@ int Block2() {
             x[10] = RR(Q[11] - Q[10], 17) - F(Q[10], Q[9], Q[8]) - Q[7] - 0xffff5bb1;
             x[15] = RR(Q[16] - Q[15], 22) - F(Q[15], Q[14], Q[13]) - Q[12] - 0x49b40821;
 
+
             ///////////////////////////////////////////////////////////////
             ///                      MMMM Q1/Q2                          //
             ///////////////////////////////////////////////////////////////
@@ -1358,6 +1352,7 @@ int Block2() {
                 x[13] = RR(Q[14] - Q[13], 12) - F(Q[13], Q[12], Q[11]) - Q[10] - 0xfd987193;
                 x[14] = RR(Q[15] - Q[14], 17) - F(Q[14], Q[13], Q[12]) - Q[11] - 0xa679438e;
 
+
                 ///////////////////////////////////////////////////////////////
                 ///                         MMMM Q4                          //
                 ///////////////////////////////////////////////////////////////
@@ -1422,10 +1417,11 @@ int Block2() {
                         Q[47] = Q[46] + RL(H(Q[46], Q[45], Q[44]) + Q[43] + x[15] + 0x1fa27cf8, 16);
                         Q[48] = Q[47] + RL(H(Q[47], Q[46], Q[45]) + Q[44] + x[2] + 0xc4ac5665, 23);
 
+                        
                         //Last sufficient conditions
                         if (bit(Q[48], 32) != bit(Q[46], 32))
                             continue;
-
+                        
                         Q[49] = Q[48] + RL(I(Q[48], Q[47], Q[46]) + Q[45] + x[0] + 0xf4292244, 6);
 
                         if (bit(Q[49], 32) != bit(Q[47], 32))
@@ -1531,7 +1527,6 @@ int Block2() {
                         AA0 = A0 + Q[61]; BB0 = B0 + Q[64];
                         CC0 = C0 + Q[63]; DD0 = D0 + Q[62];
 
-
                         //Message 2 intermediate hash computation
                         for (i = 0; i < 16; i++)
                             Hx[i] = x[i];
@@ -1584,7 +1579,7 @@ int main(char* arg[]) {
 
     //Seed setting for the LCG generator
     uint32_t seed;
-    seed = 1234;
+    seed = 521;
     X = seed;
 
     //Default init vectors
@@ -1655,119 +1650,119 @@ int main(char* arg[]) {
     ///////////////////////////////////////////////////////////////
 
     //If requested, final hash is computed
-    if (PRINT_FINAL_HASH || PRINT_FINAL_HASH_IN_SUMMARY) {
+    //if (PRINT_FINAL_HASH || PRINT_FINAL_HASH_IN_SUMMARY) {
 
-        //Last message block computation (Padding)
-        for (int i = 0; i < 16; i++)
-            Hx[i] = 0;
+    //    //Last message block computation (Padding)
+    //    for (int i = 0; i < 16; i++)
+    //        Hx[i] = 0;
 
-        Hx[0] = 0x00000080;
-        Hx[14] = 0x00000400;
+    //    Hx[0] = 0x00000080;
+    //    Hx[14] = 0x00000400;
 
-        //Hash computation
-        a = A0; b = B0; c = C0; d = D0;
-        HMD5Tr();
-        A0 += a; B0 += b; C0 += c; D0 += d;
+    //    //Hash computation
+    //    a = A0; b = B0; c = C0; d = D0;
+    //    HMD5Tr();
+    //    A0 += a; B0 += b; C0 += c; D0 += d;
 
-    }
+    //}
 
-    // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    //// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    if (WRITE_BLOCKS_SUMMARY) {
+    //if (WRITE_BLOCKS_SUMMARY) {
 
-        //We store the filenames of our collision blocks
-        sprintf_s(summary, "./results/collision_md5_%08X.txt", seed);
+    //    //We store the filenames of our collision blocks
+    //    sprintf_s(summary, "./results/collision_md5_%08X.txt", seed);
 
-        f = fopen(summary, "a");
+    //    f = fopen(summary, "a");
 
-        //Print message 1 bytes in summary file
-        fprintf(f, "\nunsigned char m0[128] = {\n");
-        for (int i = 0; i < 128; i++) {
+    //    //Print message 1 bytes in summary file
+    //    fprintf(f, "\nunsigned char m0[128] = {\n");
+    //    for (int i = 0; i < 128; i++) {
 
-            if ((i != 0) && ((i % 16) == 0))
-                fprintf(f, "\n");
+    //        if ((i != 0) && ((i % 16) == 0))
+    //            fprintf(f, "\n");
 
-            fprintf(f, "0x%02X", v1[i]);
+    //        fprintf(f, "0x%02X", v1[i]);
 
-            if (i != 127)
-                fprintf(f, ",");
-            else
-                fprintf(f, "\n};\n");
-        }
+    //        if (i != 127)
+    //            fprintf(f, ",");
+    //        else
+    //            fprintf(f, "\n};\n");
+    //    }
 
-        //Print message 2 bytes in summary file
-        fprintf(f, "\nunsigned char m1[128] = {\n");
-        for (int i = 0; i < 128; i++) {
+    //    //Print message 2 bytes in summary file
+    //    fprintf(f, "\nunsigned char m1[128] = {\n");
+    //    for (int i = 0; i < 128; i++) {
 
-            if ((i != 0) && ((i % 16) == 0))
-                fprintf(f, "\n");
+    //        if ((i != 0) && ((i % 16) == 0))
+    //            fprintf(f, "\n");
 
-            fprintf(f, "0x%02X", v2[i]);
+    //        fprintf(f, "0x%02X", v2[i]);
 
-            if (i != 127)
-                fprintf(f, ",");
-            else
-                fprintf(f, "\n};\n\n");
-        }
+    //        if (i != 127)
+    //            fprintf(f, ",");
+    //        else
+    //            fprintf(f, "\n};\n\n");
+    //    }
 
-        //Print times in summary
-        fprintf(f, "/* First collision block took  : %f sec */\n", B1_time);
-        fprintf(f, "/* Second collision block took : %f sec */\n", B2_time);
+    //    //Print times in summary
+    //    fprintf(f, "/* First collision block took  : %f sec */\n", B1_time);
+    //    fprintf(f, "/* Second collision block took : %f sec */\n", B2_time);
 
-        if (PRINT_FINAL_HASH_IN_SUMMARY) {
+    //    if (PRINT_FINAL_HASH_IN_SUMMARY) {
 
-            fprintf(f, "/* Colliding hash: ");
-            p = (uint8_t*)&A0;
-            fprintf(f, "%02x%02x%02x%02x", p[0], p[1], p[2], p[3]);
-            p = (uint8_t*)&B0;
-            fprintf(f, "%02x%02x%02x%02x", p[0], p[1], p[2], p[3]);
-            p = (uint8_t*)&C0;
-            fprintf(f, "%02x%02x%02x%02x", p[0], p[1], p[2], p[3]);
-            p = (uint8_t*)&D0;
-            fprintf(f, "%02x%02x%02x%02x", p[0], p[1], p[2], p[3]);
-            fprintf(f, " */\n");
+    //        fprintf(f, "/* Colliding hash: ");
+    //        p = (uint8_t*)&A0;
+    //        fprintf(f, "%02x%02x%02x%02x", p[0], p[1], p[2], p[3]);
+    //        p = (uint8_t*)&B0;
+    //        fprintf(f, "%02x%02x%02x%02x", p[0], p[1], p[2], p[3]);
+    //        p = (uint8_t*)&C0;
+    //        fprintf(f, "%02x%02x%02x%02x", p[0], p[1], p[2], p[3]);
+    //        p = (uint8_t*)&D0;
+    //        fprintf(f, "%02x%02x%02x%02x", p[0], p[1], p[2], p[3]);
+    //        fprintf(f, " */\n");
 
-        }
+    //    }
 
-        fclose(f);
+    //    fclose(f);
 
-    }
+    //}
 
-    // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    //// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    if (WRITE_BLOCKS_TO_DISK) {
+    //if (WRITE_BLOCKS_TO_DISK) {
 
-        //Writing block to disk
-        sprintf_s(m1_file, "./results/collision1_md5_%08X.bin", seed);
-        sprintf_s(m2_file, "./results/collision2_md5_%08X.bin", seed);
+    //    //Writing block to disk
+    //    sprintf_s(m1_file, "./results/collision1_md5_%08X.bin", seed);
+    //    sprintf_s(m2_file, "./results/collision2_md5_%08X.bin", seed);
 
-        printf("\nWriting Message 1 to disk: ");
-        printf((write_block(m1_file, (void*)v1) ? "FAILED\n" : "OK\n"));
-        printf("Writing Message 2 to disk: ");
-        printf((write_block(m2_file, (void*)v2) ? "FAILED\n" : "OK\n"));
+    //    printf("\nWriting Message 1 to disk: ");
+    //    printf((write_block(m1_file, (void*)v1) ? "FAILED\n" : "OK\n"));
+    //    printf("Writing Message 2 to disk: ");
+    //    printf((write_block(m2_file, (void*)v2) ? "FAILED\n" : "OK\n"));
 
-    }
+    //}
 
-    // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    //// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    if (PRINT_FINAL_HASH) {
+    //if (PRINT_FINAL_HASH) {
 
-        //Hash printing
-        printf("\nColliding hash: ");
-        p = (uint8_t*)&A0;
-        printf("%02x%02x%02x%02x", p[0], p[1], p[2], p[3]);
-        p = (uint8_t*)&B0;
-        printf("%02x%02x%02x%02x", p[0], p[1], p[2], p[3]);
-        p = (uint8_t*)&C0;
-        printf("%02x%02x%02x%02x", p[0], p[1], p[2], p[3]);
-        p = (uint8_t*)&D0;
-        printf("%02x%02x%02x%02x", p[0], p[1], p[2], p[3]);
-        printf("\n");
+    //    //Hash printing
+    //    printf("\nColliding hash: ");
+    //    p = (uint8_t*)&A0;
+    //    printf("%02x%02x%02x%02x", p[0], p[1], p[2], p[3]);
+    //    p = (uint8_t*)&B0;
+    //    printf("%02x%02x%02x%02x", p[0], p[1], p[2], p[3]);
+    //    p = (uint8_t*)&C0;
+    //    printf("%02x%02x%02x%02x", p[0], p[1], p[2], p[3]);
+    //    p = (uint8_t*)&D0;
+    //    printf("%02x%02x%02x%02x", p[0], p[1], p[2], p[3]);
+    //    printf("\n");
 
-    }
+    //}
 
-    printf("\nGeneration completed.\n");
+    //printf("\nGeneration completed.\n");
 
-    return 0;
+    //return 0;
 
 }
